@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time To Practice</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Time To Practice</h1>
+        
+        <div class="goal-input-section">
+            <h2>Musical Goals</h2>
+            <div class="input-group">
+                <input type="text" id="goalInput" placeholder="e.g., Harmonic Minor">
+                <select id="goalCategory">
+                    <option value="technique">Technique</option>
+                    <option value="repertoire">Repertoire</option>
+                    <option value="theory">Music Theory</option>
+                    <option value="sightReading">Sight Reading</option>
+                </select>
+                <button onclick="addGoal()">Add</button>
+            </div>
+            <div id="goalsList" class="goals-list"></div>
+            <button onclick="generateTasks()" class="generate-btn">Generate Weekly Plan</button>
+        </div>
+
+        <div class="weekly-tasks-section">
+            <h2>Weekly Schedule</h2>
+            <div id="weeklyTasks" class="tasks-container"></div>
+        </div>
+
+        <button onclick="downloadPDF()" class="download-btn">Download Weekly Plan</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
