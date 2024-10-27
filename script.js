@@ -160,6 +160,58 @@ function generateTaskForGoal(goal, day) {
     };
 }
 
+function makeTaskEditable(taskId) {
+    const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
+    const taskContent = taskItem.querySelector('.task-content');
+    
+    // Don't allow editing if task is completed
+    if (taskItem.classList.contains('completed')) {
+        return;
+    }
+
+    if (!taskContent.isContentEditable) {
+        taskContent.contentEditable = true;
+        taskContent.focus();
+        taskContent.classList.add('editing');
+        
+        // Add save button if it doesn't exist
+        let saveButton = taskContent.nextElementSibling;
+        if (!saveButton || !saveButton.classList.contains('save-task-btn')) {
+            saveButton = document.createElement('button');
+            saveButton.className = 'save-task-btn';
+            saveButton.innerHTML = '✓';
+            saveButton.onclick = () => saveTaskChanges(taskId);
+            taskContent.parentElement.appendChild(saveButton);
+        }
+
+        // Add click outside listener
+        document.addEventListener('click', function clickOutside(e) {
+            if (!taskContent.contains(e.target) && !saveButton.contains(e.target)) {
+                saveTaskChanges(taskId);
+                document.removeEventListener('click', clickOutside);
+            }
+        });
+    }
+}
+
+function saveTaskChanges(taskId) {
+    const taskContent = document.querySelector(`[data-task-id="${taskId}"] .task-content`);
+    const saveButton = document.querySelector(`[data-task-id="${taskId}"] .save-task-btn`);
+    
+    if (taskContent.isContentEditable) {
+        const taskObj = weeklyTasks.find(t => t.id === parseFloat(taskId));
+        if (taskObj) {
+            taskObj.text = taskContent.textContent;
+        }
+        
+        taskContent.contentEditable = false;
+        taskContent.classList.remove('editing');
+        if (saveButton) {
+            saveButton.remove();
+        }
+    }
+}
+
 function displayWeeklyTasks() {
     const tasksContainer = document.getElementById('weeklyTasks');
     tasksContainer.innerHTML = '';
@@ -182,10 +234,10 @@ function displayWeeklyTasks() {
             let tasksHTML = `<h3>${day}</h3>`;
             tasksByDay[day].forEach(task => {
                 tasksHTML += `
-                    <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
                         <div class="task-checkbox ${task.completed ? 'completed' : ''}" 
                              onclick="toggleTaskCompletion(${task.id})"></div>
-                        <div class="task-content">${task.text}</div>
+                        <div class="task-content" onclick="makeTaskEditable(${task.id})">${task.text}</div>
                     </div>
                 `;
             });
@@ -205,10 +257,8 @@ function toggleTaskCompletion(taskId) {
 }
 
 function downloadPDF() {
-    // Create a new window for the printable version
     const printWindow = window.open('', '_blank');
     
-    // Create the printable content
     let content = `
         <html>
         <head>
@@ -268,7 +318,6 @@ function downloadPDF() {
             <h1>Weekly Piano Practice Plan</h1>
     `;
 
-    // Add tasks grouped by day
     const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const tasksByDay = weeklyTasks.reduce((acc, task) => {
         if (!acc[task.day]) {
@@ -297,18 +346,14 @@ function downloadPDF() {
         </html>
     `;
 
-    // Write the content to the new window
     printWindow.document.write(content);
     printWindow.document.close();
 
-    // Wait for content to load then print
     printWindow.onload = function() {
         printWindow.print();
-        // printWindow.close(); // Optional: close after printing
     };
 }
 
-// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     updatePlaceholder();
     
